@@ -5,7 +5,7 @@ import './App.css';
 import Landing from "./Landing";
 
 const App = () => (
-  <Route path='/' exact component={Landing} />
+  <Route path='/' exact component={Landing}/>
 );
 
 export default App;
