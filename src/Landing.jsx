@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 
 import logo from './logo.svg';
 
@@ -7,14 +8,9 @@ const Landing = () => (
     <header className="App-header">
       <img src={logo} className="App-logo" alt="logo"/>
       <p>Welcome to whatever this is!</p>
-      <a
-        className="App-link"
-        href="https://reactjs.org"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Learn React
-      </a>
+      <Link to="/dashboard" className="App-link">
+        Open dashboard
+      </Link>
     </header>
   </div>
 );

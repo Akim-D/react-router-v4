@@ -26,6 +26,6 @@ describe('App', () => {
       </Router>
     );
 
-    expect(wrapper.find(Landing).exists()).toBeTruthy();
+    expect(wrapper.exists(Landing)).toBeTruthy();
   });
 });

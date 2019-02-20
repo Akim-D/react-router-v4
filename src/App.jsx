@@ -1,11 +1,17 @@
 import React from 'react';
-import {Route} from "react-router-dom";
+import {Route, Switch} from 'react-router';
+
+import Dashboard from './Dashboard';
+import Landing from './Landing';
+import withAuthentication, {AuthenticatedRoute} from './auth';
 
 import './App.css';
-import Landing from "./Landing";
 
 const App = () => (
-  <Route path='/' exact component={Landing}/>
+  <Switch>
+    <Route path='/' exact component={Landing}/>
+    <AuthenticatedRoute path='/dashboard' exact component={Dashboard}/>
+  </Switch>
 );
 
-export default App;
+export default withAuthentication()(App);
