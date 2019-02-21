@@ -25,12 +25,16 @@ class Auth {
     this._auth0.authorize();
   }
 
-  verify(callback) {
-    this._auth0.parseHash((err, res) => {
-      if (!err && res && res.accessToken && res.idToken) {
-        this._setSession(res);
-        callback && callback();
-      }
+  verify() {
+    return new Promise((resolve, reject) => {
+      this._auth0.parseHash((err, res) => {
+        if (err || !res || !res.accessToken || !res.idToken) {
+          reject(err);
+        } else {
+          this._setSession(res);
+          resolve(this);
+        }
+      });
     });
   }
 

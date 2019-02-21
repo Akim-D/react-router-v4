@@ -40,92 +40,107 @@ describe('Auth', () => {
     expect(webAuth.parseHash).toBeCalledWith(expect.any(Function));
   });
 
-  test('is authorised after successful verification', () => {
-    givenSuccessfulVerification({
-      accessToken: 'access',
-      idToken: 'id',
-      expiresIn: 3600,
-    });
+  test('returns a promise while awaiting verification', () => {
+    const result = auth.verify();
 
-    auth.verify();
-    advanceTime(3599);
-
-    expect(auth.isAuthorised).toBeTruthy();
+    expect(result).toBeInstanceOf(Promise);
   });
 
-  test('invokes callback after successful verification', () => {
-    const callback = jest.fn();
-    givenSuccessfulVerification({
+  test('promise resolves after successful verification', () => {
+    givenSuccessfulAuthorisation({
       accessToken: 'token',
       idToken: 'another-token',
       expiresIn: 60,
     });
 
-    auth.verify(callback);
+    return expect(auth.verify()).resolves.toEqual(auth);
+  });
 
-    expect(callback).toBeCalled();
+  test('promise rejects with error after failed verification', () => {
+    givenFailedAuthorisation({ error: 'description' });
+
+    return expect(auth.verify()).rejects.toEqual({
+      error: 'description'
+    });
+  });
+
+  test('is authorised after successful verification', () => {
+    givenSuccessfulAuthorisation({
+      accessToken: 'access',
+      idToken: 'id',
+      expiresIn: 3600,
+    });
+
+    expect.assertions(1);
+    return auth.verify().then(() => {
+      advanceTime(3599);
+      expect(auth.isAuthorised).toBeTruthy();
+    });
   });
 
   test('authorisation expires when token expires', () => {
-    givenSuccessfulVerification({
+    givenSuccessfulAuthorisation({
       accessToken: 'access',
       idToken: 'id',
       expiresIn: 1800,
     });
 
-    auth.verify();
-    advanceTime(1800);
-
-    expect(auth.isAuthorised).toBeFalsy();
+    expect.assertions(1);
+    return auth.verify().then(() => {
+      advanceTime(1800);
+      expect(auth.isAuthorised).toBeFalsy();
+    });
   });
 
   test('is not authorised if verification fails', () => {
-    givenFailedVerification({});
+    givenFailedAuthorisation();
 
-    auth.verify();
-
-    expect(auth.isAuthorised).toBeFalsy();
+    expect.assertions(1);
+    return auth.verify().catch(() => {
+      expect(auth.isAuthorised).toBeFalsy();
+    });
   });
 
   test('is not authorised if no token is available', () => {
-    givenSuccessfulVerification(null);
+    givenSuccessfulAuthorisation(null);
 
-    auth.verify();
-
-    expect(auth.isAuthorised).toBeFalsy();
+    expect.assertions(1);
+    return auth.verify().catch(() => {
+      expect(auth.isAuthorised).toBeFalsy();
+    });
   });
 
   test('is not authorised if access token is missing', () => {
-    givenSuccessfulVerification({
+    givenSuccessfulAuthorisation({
       expiresIn: 60,
       idToken: 'id'
     });
 
-    auth.verify();
-
-    expect(auth.isAuthorised).toBeFalsy();
+    expect.assertions(1);
+    return auth.verify().catch(() => {
+      expect(auth.isAuthorised).toBeFalsy();
+    });
   });
 
   test('is not authorised if id token is missing', () => {
-    givenSuccessfulVerification({
+    givenSuccessfulAuthorisation({
       expiresIn: 60,
       accessToken: 'access'
     });
 
-    auth.verify();
-
-    expect(auth.isAuthorised).toBeFalsy();
+    expect.assertions(1);
+    return auth.verify().catch(() => {
+      expect(auth.isAuthorised).toBeFalsy();
+    });
   });
 
-  // TODO: defers to configured callback on authentication error
-
-  function givenSuccessfulVerification(result) {
+  function givenSuccessfulAuthorisation(result) {
     webAuth.parseHash.mockImplementation((callback) => {
       callback(null, result);
     });
   }
 
-  function givenFailedVerification(error) {
+  function givenFailedAuthorisation(error = {}) {
     webAuth.parseHash.mockImplementation((callback) => {
       callback(error, null);
     });

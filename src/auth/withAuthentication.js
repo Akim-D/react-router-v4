@@ -30,18 +30,17 @@ const withAuthentication = (
       this.state = { ready: false };
     }
 
+    // TODO: Render something else if verification fails
     render() {
       if (!this.state.ready) {
-        auth.verify(() => {
+        auth.verify().then(() => {
           this.setState({ ready: true });
         });
         return <p>Waiting for verification...</p>;
       }
 
       const from = JSON.parse(sessionStorage.getItem(storageKey));
-      return (
-        <Redirect to={from}/>
-      );
+      return <Redirect to={from}/>;
     }
   }
 

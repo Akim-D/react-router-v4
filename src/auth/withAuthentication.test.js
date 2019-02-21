@@ -2,9 +2,13 @@ import React from 'react';
 import {MemoryRouter as Router} from 'react-router';
 import {mount, shallow} from 'enzyme';
 
+import Auth from './services/Auth';
 import withAuthentication from './withAuthentication';
 
+jest.mock('./services/Auth');
+
 describe('withAuthentication', () => {
+  const auth = new Auth();
   const StubComponent = () => null;
   const mountWithRouter = (Component, location) => mount(
     <Router initialEntries={location && [location]}>
@@ -56,7 +60,6 @@ describe('withAuthentication', () => {
   });
 
   test('login route starts authorization flow', () => {
-    const auth = { login: jest.fn() };
     const Component = withAuthentication({ auth })(StubComponent);
 
     mountWithRouter(<Component/>, { pathname: '/login', state: { from: {} } });
@@ -65,7 +68,6 @@ describe('withAuthentication', () => {
   });
 
   test('login route persists post-auth destination', () => {
-    const auth = { login: jest.fn() };
     const Component = withAuthentication({ auth, storageKey: 'kept-here' })(StubComponent);
 
     mountWithRouter(
@@ -108,12 +110,12 @@ describe('withAuthentication', () => {
   });
 
   test('callback route verifies token from authorization flow', () => {
-    const auth = { verify: jest.fn() };
     const storageKey = 'storage-key';
     const Component = withAuthentication({ auth, storageKey })(StubComponent);
     sessionStorage[storageKey] = JSON.stringify({
       pathname: '/path',
     });
+    auth.verify.mockResolvedValue();
 
     mountWithRouter(<Component/>, '/login/callback');
 
@@ -121,15 +123,6 @@ describe('withAuthentication', () => {
   });
 
   test('callback route navigates to original destination after verification', (done) => {
-    const auth = {
-      isAuthorised: false,
-      verify(callback) {
-        setTimeout(() => {
-          this.isAuthorised = true;
-          callback();
-        }, 0);
-      }
-    };
     const storageKey = 'storage-key';
     const Component = withAuthentication({ auth, storageKey })(StubComponent);
     sessionStorage[storageKey] = JSON.stringify({
@@ -137,9 +130,11 @@ describe('withAuthentication', () => {
       search: '?attr=value',
       hash: '#fragment',
     });
+    auth.verify.mockResolvedValue(auth);
 
     const wrapper = mountWithRouter(<Component/>, '/login/callback');
 
+    expect.assertions(1);
     setTimeout(() => {
       expect(wrapper.find(Router).instance().history.location).toMatchObject({
         pathname: '/private',
