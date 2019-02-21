@@ -59,9 +59,34 @@ describe('withAuthentication', () => {
     const auth = { login: jest.fn() };
     const Component = withAuthentication({ auth })(StubComponent);
 
-    mountWithRouter(<Component/>, '/login');
+    mountWithRouter(<Component/>, { pathname: '/login', state: { from: {} } });
 
     expect(auth.login).toBeCalled();
+  });
+
+  test('login route persists post-auth destination', () => {
+    const auth = { login: jest.fn() };
+    const Component = withAuthentication({ auth, storageKey: 'kept-here' })(StubComponent);
+
+    mountWithRouter(
+      <Component/>,
+      {
+        pathname: '/login',
+        state: {
+          from: {
+            pathname: '/private',
+            search: '?attr=value',
+            hash: '#fragment',
+          }
+        }
+      }
+    );
+
+    expect(JSON.parse(sessionStorage['kept-here'])).toMatchObject({
+      pathname: '/private',
+      search: '?attr=value',
+      hash: '#fragment',
+    });
   });
 
   test('registers callback route at the configured path', () => {
@@ -84,10 +109,44 @@ describe('withAuthentication', () => {
 
   test('callback route verifies token from authorization flow', () => {
     const auth = { verify: jest.fn() };
-    const Component = withAuthentication({ auth })(StubComponent);
+    const storageKey = 'storage-key';
+    const Component = withAuthentication({ auth, storageKey })(StubComponent);
+    sessionStorage[storageKey] = JSON.stringify({
+      pathname: '/path',
+    });
 
     mountWithRouter(<Component/>, '/login/callback');
 
     expect(auth.verify).toBeCalled();
+  });
+
+  test('callback route navigates to original destination after verification', (done) => {
+    const auth = {
+      isAuthorised: false,
+      verify(callback) {
+        setTimeout(() => {
+          this.isAuthorised = true;
+          callback();
+        }, 0);
+      }
+    };
+    const storageKey = 'storage-key';
+    const Component = withAuthentication({ auth, storageKey })(StubComponent);
+    sessionStorage[storageKey] = JSON.stringify({
+      pathname: '/private',
+      search: '?attr=value',
+      hash: '#fragment',
+    });
+
+    const wrapper = mountWithRouter(<Component/>, '/login/callback');
+
+    setTimeout(() => {
+      expect(wrapper.find(Router).instance().history.location).toMatchObject({
+        pathname: '/private',
+        search: '?attr=value',
+        hash: '#fragment',
+      });
+      done();
+    }, 5);
   });
 });

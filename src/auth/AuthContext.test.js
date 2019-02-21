@@ -26,6 +26,16 @@ describe('AuthContext', () => {
     expect(callback).nthCalledWith(1, expected);
   });
 
+  test('default Auth implementation is not authorised', () => {
+    const wrapper = mount(
+      <AuthContext.Consumer>
+        {({ auth }) => auth.isAuthorised ? 'authorised' : 'not authorised'}
+      </AuthContext.Consumer>
+    );
+
+    expect(wrapper.text()).not.toEqual('authorised');
+  });
+
   test('login route should propagate to authenticated route redirects', () => {
     // noinspection JSUnresolvedVariable: Jest does not mock getters
     authService.isAuthorised = false;

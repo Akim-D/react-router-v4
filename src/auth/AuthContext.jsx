@@ -2,8 +2,6 @@ import React from 'react';
 
 import Auth from './services/Auth';
 
-const auth = new Auth();
+const dummyAuth = Object.create(Auth.prototype);
 
-export const AuthContext = React.createContext({
-  auth,
-});
+export const AuthContext = React.createContext({ auth: dummyAuth });
