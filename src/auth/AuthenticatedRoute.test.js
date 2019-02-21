@@ -7,7 +7,7 @@ import withAuthentication from './withAuthentication';
 
 describe('AuthenticatedRoute', () => {
   const PrivateComponent = () => null;
-  const authService = { isAuthenticated: false, login: jest.fn() };
+  const authService = { isAuthorised: false, login: jest.fn() };
   const mountWithContext = (Component, location) => {
     const WrapperComponent = withAuthentication({ auth: authService })(() => Component);
     return mount(
@@ -34,7 +34,7 @@ describe('AuthenticatedRoute', () => {
   });
 
   test('renders component if user is authenticated', () => {
-    authService.isAuthenticated = true;
+    authService.isAuthorised = true;
 
     const route = mountWithContext(
       <AuthenticatedRoute path="/path" component={PrivateComponent}/>,
@@ -45,7 +45,7 @@ describe('AuthenticatedRoute', () => {
   });
 
   test('redirects if user is not authenticated', () => {
-    authService.isAuthenticated = false;
+    authService.isAuthorised = false;
 
     const route = mountWithContext(
       <AuthenticatedRoute path="/private" component={PrivateComponent}/>,
@@ -58,7 +58,7 @@ describe('AuthenticatedRoute', () => {
   });
 
   test('stores browsing context in history when redirecting', () => {
-    authService.isAuthenticated = false;
+    authService.isAuthorised = false;
 
     const route = mountWithContext(
       <AuthenticatedRoute path="/path" component={PrivateComponent}/>,

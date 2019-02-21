@@ -8,7 +8,7 @@ const AuthenticatedRoute = ({ component: Component, ...rest }) => (
   <AuthContext.Consumer>
     {({ auth, path }) => (
       <Route {...rest} render={
-        (props) => auth.isAuthenticated ? (
+        (props) => auth.isAuthorised ? (
           <Component {...props}/>
         ) : (
           <Redirect to={{

@@ -7,9 +7,11 @@ import {AuthContext} from './AuthContext';
 import AuthenticatedRoute from './AuthenticatedRoute';
 import withAuthentication from './withAuthentication';
 
+jest.mock('./services/Auth');
+
 describe('AuthContext', () => {
   const ProtectedComponent = () => null;
-  const authService = { isAuthenticated: false, login: jest.fn() };
+  const authService = new Auth();
 
   test('exposes auth context property', () => {
     const callback = jest.fn();
@@ -25,7 +27,8 @@ describe('AuthContext', () => {
   });
 
   test('login route should propagate to authenticated route redirects', () => {
-    authService.isAuthenticated = false;
+    // noinspection JSUnresolvedVariable: Jest does not mock getters
+    authService.isAuthorised = false;
 
     const Component = withAuthentication({ path: '/path/to/login', auth: authService })(() => (
       <AuthenticatedRoute path="/private" component={ProtectedComponent}/>
