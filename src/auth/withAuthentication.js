@@ -11,8 +11,22 @@ const withAuthentication = (
     auth = new Auth(),
     storageKey = 'auth0',
   } = {}
-) => {
-  const login = ({ location: { state: { from } } }) => {
+) => (Component) => (props) => (
+  <AuthContext.Provider value={{ auth, path }}>
+    <Route path={path} exact render={({ location }) => (
+      <LoginHelper from={location.state.from} auth={auth} storageKey={storageKey}/>
+    )}/>
+    <Route path={callback} exact render={() => (
+      <VerificationHelper auth={auth} storageKey={storageKey}/>
+    )}/>
+    <Component {...props}/>
+  </AuthContext.Provider>
+);
+
+class LoginHelper extends React.PureComponent {
+  componentDidMount() {
+    const { from, auth, storageKey } = this.props;
+
     sessionStorage.setItem(storageKey, JSON.stringify({
       pathname: from.pathname,
       search: from.search,
@@ -20,37 +34,37 @@ const withAuthentication = (
     }));
 
     auth.login();
-
-    return <p>Logging in using Auth0...</p>;
-  };
-
-  class Verifier extends React.Component {
-    constructor(props) {
-      super(props);
-      this.state = { ready: false };
-    }
-
-    // TODO: Render something else if verification fails
-    render() {
-      if (!this.state.ready) {
-        auth.verify().then(() => {
-          this.setState({ ready: true });
-        });
-        return <p>Waiting for verification...</p>;
-      }
-
-      const from = JSON.parse(sessionStorage.getItem(storageKey));
-      return <Redirect to={from}/>;
-    }
   }
 
-  return (Component) => (props) => (
-    <AuthContext.Provider value={{ auth, path }}>
-      <Route path={path} exact render={login}/>
-      <Route path={callback} exact component={Verifier}/>
-      <Component {...props}/>
-    </AuthContext.Provider>
-  );
-};
+  render() {
+    return <p>Logging in using Auth0...</p>;
+  }
+}
+
+class VerificationHelper extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = { ready: false };
+  }
+
+  componentDidMount() {
+    const { auth } = this.props;
+
+    auth.verify().then(() => {
+      this.setState({ ready: true });
+    });
+  }
+
+  // TODO: Render something else if verification fails
+  render() {
+    if (!this.state.ready) {
+      return <p>Waiting for verification...</p>;
+    }
+
+    const { storageKey } = this.props;
+    const from = JSON.parse(sessionStorage.getItem(storageKey));
+    return <Redirect to={from}/>;
+  }
+}
 
 export default withAuthentication;
