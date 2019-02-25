@@ -170,4 +170,24 @@ describe('withAuthentication', () => {
 
     expect(wrapper.find('div').text()).toEqual('expected verification text');
   });
+
+  test('callback route displays error content if verification fails', (done) => {
+    const expectedContent = <div>expected verification error: invalid password</div>;
+    const Component = withAuthentication({
+      auth,
+      onError: () => expectedContent
+    })(StubComponent);
+    // noinspection JSCheckFunctionSignatures
+    auth.verify.mockRejectedValue({ error: 'invalid password' });
+
+    const wrapper = mountWithRouter(<Component/>, '/login/callback');
+
+    expect.assertions(1);
+    setTimeout(() => {
+      wrapper.update();
+
+      expect(wrapper.find('div').text()).toEqual('expected verification error: invalid password');
+      done();
+    }, 5);
+  });
 });

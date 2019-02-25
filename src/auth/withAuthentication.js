@@ -12,14 +12,15 @@ const withAuthentication = (
     storageKey = 'auth0',
     onLogin = () => null,
     onVerification = () => null,
+    onError = () => null,
   } = {}
 ) => (Component) => (props) => (
   <AuthContext.Provider value={{ auth, path }}>
     <Route path={path} exact render={({ location }) => (
-      <LoginHelper onLogin={onLogin} from={location.state.from} auth={auth} storageKey={storageKey}/>
+      <LoginHelper from={location.state.from} auth={auth} storageKey={storageKey} onLogin={onLogin}/>
     )}/>
     <Route path={callback} exact render={() => (
-      <VerificationHelper onVerification={onVerification} auth={auth} storageKey={storageKey}/>
+      <VerificationHelper auth={auth} storageKey={storageKey} onVerification={onVerification} onError={onError}/>
     )}/>
     <Component {...props}/>
   </AuthContext.Provider>
@@ -46,7 +47,7 @@ class LoginHelper extends React.PureComponent {
 class VerificationHelper extends React.PureComponent {
   constructor(props) {
     super(props);
-    this.state = { ready: false };
+    this.state = { ready: false, error: null };
   }
 
   componentDidMount() {
@@ -54,13 +55,16 @@ class VerificationHelper extends React.PureComponent {
 
     auth.verify().then(() => {
       this.setState({ ready: true });
+    }).catch((error) => {
+      this.setState({ ready: true, error });
     });
   }
 
-  // TODO: Render something else if verification fails
   render() {
     if (!this.state.ready) {
       return this.props.onVerification();
+    } else if (this.state.error) {
+      return this.props.onError(this.state.error);
     }
 
     const { storageKey } = this.props;
