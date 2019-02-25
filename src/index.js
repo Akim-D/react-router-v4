@@ -1,11 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {BrowserRouter as Router} from 'react-router-dom';
+import 'bootstrap'
 
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-import './index.css';
+import './bootstrap-solar.min.css';
 
 ReactDOM.render(
   <Router>

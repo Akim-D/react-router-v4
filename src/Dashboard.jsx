@@ -1,15 +1,13 @@
 import React from 'react';
-import {Link} from 'react-router-dom';
 
 import SiteTitle from './SiteTitle';
 
 class Dashboard extends React.Component {
   render() {
     return (
-      <div>
+      <div className="container-fluid">
         <SiteTitle>Dashboard — Demo</SiteTitle>
-        <p><Link to='/'>Home</Link></p>
-        <p>Dashboard</p>
+        <p>This would be the dashboard.</p>
       </div>
     );
   }

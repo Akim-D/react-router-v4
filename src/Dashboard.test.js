@@ -7,6 +7,6 @@ describe('Dashboard', () => {
   test('renders', () => {
     const wrapper = shallow(<Dashboard/>);
 
-    expect(wrapper.text()).toContain('Dashboard');
+    expect(wrapper.text()).toContain('dashboard');
   });
 });
