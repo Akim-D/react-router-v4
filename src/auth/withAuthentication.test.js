@@ -16,6 +16,11 @@ describe('withAuthentication', () => {
     </Router>
   );
 
+  beforeEach(() => {
+    // noinspection JSCheckFunctionSignatures
+    auth.verify.mockResolvedValue(auth);
+  });
+
   test('configuration step returns a component factory', () => {
     const componentFactory = withAuthentication();
 
@@ -67,6 +72,17 @@ describe('withAuthentication', () => {
     expect(auth.login).toBeCalled();
   });
 
+  test('login route displays content during transition to provider', () => {
+    const expectedContent = <div>expected auth transition text</div>;
+    const Component = withAuthentication({
+      onLogin: () => expectedContent
+    })(StubComponent);
+
+    const wrapper = mountWithRouter(<Component/>, { pathname: '/login', state: { from: {} } });
+
+    expect(wrapper.find('div').text()).toEqual('expected auth transition text');
+  });
+
   test('login route persists post-auth destination', () => {
     const Component = withAuthentication({ auth, storageKey: 'kept-here' })(StubComponent);
 
@@ -115,7 +131,6 @@ describe('withAuthentication', () => {
     sessionStorage[storageKey] = JSON.stringify({
       pathname: '/path',
     });
-    auth.verify.mockResolvedValue();
 
     mountWithRouter(<Component/>, '/login/callback');
 
@@ -130,7 +145,6 @@ describe('withAuthentication', () => {
       search: '?attr=value',
       hash: '#fragment',
     });
-    auth.verify.mockResolvedValue(auth);
 
     const wrapper = mountWithRouter(<Component/>, '/login/callback');
 
@@ -143,5 +157,17 @@ describe('withAuthentication', () => {
       });
       done();
     }, 5);
+  });
+
+  test('callback route displays content before transition to original destination', () => {
+    const expectedContent = <div>expected verification text</div>;
+    const Component = withAuthentication({
+      auth,
+      onVerification: () => expectedContent
+    })(StubComponent);
+
+    const wrapper = mountWithRouter(<Component/>, '/login/callback');
+
+    expect(wrapper.find('div').text()).toEqual('expected verification text');
   });
 });
