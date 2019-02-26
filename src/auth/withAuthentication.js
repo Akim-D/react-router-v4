@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {Redirect, Route} from 'react-router';
 
 import Auth from './services/Auth';
@@ -8,10 +9,13 @@ const withAuthentication = (
   {
     path = '/login',
     callback = `${path}/callback`,
+    logoutPath = '/logout',
+    logoutCallbackPath = `${logoutPath}/callback`,
     auth = new Auth(),
     storageKey = 'auth0',
     onLogin = () => null,
     onVerification = () => null,
+    onLogout = () => null,
     onError = () => null,
   } = {}
 ) => (Component) => (props) => (
@@ -21,6 +25,9 @@ const withAuthentication = (
     )}/>
     <Route path={callback} exact render={() => (
       <VerificationHelper auth={auth} storageKey={storageKey} onVerification={onVerification} onError={onError}/>
+    )}/>
+    <Route path={logoutPath} exact render={({ location }) => (
+      <LogoutHelper to={location.state.to} auth={auth} storageKey={storageKey} onLogout={onLogout}/>
     )}/>
     <Component {...props}/>
   </AuthContext.Provider>
@@ -72,5 +79,28 @@ class VerificationHelper extends React.PureComponent {
     return <Redirect to={from}/>;
   }
 }
+
+class LogoutHelper extends React.PureComponent {
+  componentDidMount() {
+    const { to, auth, storageKey } = this.props;
+
+    sessionStorage.setItem(`${storageKey}:logout`, JSON.stringify({
+      path: to
+    }));
+
+    auth.logout();
+  }
+
+  render() {
+    return this.props.onLogout();
+  }
+}
+
+LogoutHelper.propTypes = {
+  auth: PropTypes.instanceOf(Auth).isRequired,
+  to: PropTypes.string.isRequired,
+  storageKey: PropTypes.string.isRequired,
+  onLogout: PropTypes.func.isRequired,
+};
 
 export default withAuthentication;

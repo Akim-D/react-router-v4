@@ -3,8 +3,13 @@ import {WebAuth} from 'auth0-js';
 class Auth {
   _expiresAt = 0;
   _auth0;
+  _logoutRedirectUri;
 
-  constructor() {
+  constructor(
+    {
+      logoutRedirectUri = process.env.REACT_APP_AUTH0_LOGOUT_REDIRECT_URI
+    } = {}
+  ) {
     this._auth0 = new WebAuth({
       domain: process.env.REACT_APP_AUTH0_DOMAIN,
       clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
@@ -13,7 +18,10 @@ class Auth {
       scope: 'openid'
     });
 
+    this._logoutRedirectUri = logoutRedirectUri;
+
     this.login = this.login.bind(this);
+    this.logout = this.logout.bind(this);
     this.verify = this.verify.bind(this);
   }
 
@@ -23,6 +31,12 @@ class Auth {
 
   login() {
     this._auth0.authorize();
+  }
+
+  logout() {
+    this._auth0.logout({
+      returnTo: this._logoutRedirectUri,
+    });
   }
 
   verify() {

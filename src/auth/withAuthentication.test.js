@@ -190,4 +190,59 @@ describe('withAuthentication', () => {
       done();
     }, 5);
   });
+
+  test('registers logout route at the configured path', () => {
+    const Component = withAuthentication({ logoutPath: '/end-auth' })(StubComponent);
+
+    const wrapper = mountWithRouter(<Component/>);
+
+    expect(wrapper.find('Route').filter({ path: '/end-auth' }).props()).toMatchObject({
+      exact: true
+    });
+  });
+
+  test('logout route defaults to /logout', () => {
+    const Component = withAuthentication()(StubComponent);
+
+    const wrapper = mountWithRouter(<Component/>);
+
+    expect(wrapper.find('Route').exists({ path: '/logout' })).toBeTruthy();
+  });
+
+  test('logout route starts de-authorization flow', () => {
+    const Component = withAuthentication({ auth, logoutCallbackPath: '/return' })(StubComponent);
+
+    mountWithRouter(<Component/>, { pathname: '/logout', state: { to: '' } });
+
+    expect(auth.logout).toBeCalled();
+  });
+
+  test('logout route displays content during transition to provider', () => {
+    const expectedContent = <div>expected de-auth transition text</div>;
+    const Component = withAuthentication({
+      onLogout: () => expectedContent
+    })(StubComponent);
+
+    const wrapper = mountWithRouter(<Component/>, { pathname: '/logout', state: { to: '' } });
+
+    expect(wrapper.find('div').text()).toEqual('expected de-auth transition text');
+  });
+
+  test('logout route persists post-de-auth destination', () => {
+    const Component = withAuthentication({ auth, storageKey: 'kept-here' })(StubComponent);
+
+    mountWithRouter(
+      <Component/>,
+      {
+        pathname: '/logout',
+        state: {
+          to: '/logged-out?attr=value#fragment',
+        }
+      }
+    );
+
+    expect(JSON.parse(sessionStorage['kept-here:logout'])).toMatchObject({
+      path: '/logged-out?attr=value#fragment',
+    });
+  });
 });

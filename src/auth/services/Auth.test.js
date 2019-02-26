@@ -18,7 +18,9 @@ describe('Auth', () => {
   });
 
   beforeEach(() => {
-    auth = new Auth();
+    auth = new Auth({
+      logoutRedirectUri: '/auth/post-logout'
+    });
 
     webAuth = WebAuth.mock.instances[0];
     global.Date.now.mockReturnValue(0);
@@ -32,6 +34,14 @@ describe('Auth', () => {
     auth.login();
 
     expect(webAuth.authorize).toBeCalled();
+  });
+
+  test('logout triggers de-authorisation flow', () => {
+    auth.logout();
+
+    expect(webAuth.logout).toBeCalledWith(expect.objectContaining({
+      returnTo: '/auth/post-logout',
+    }));
   });
 
   test('verification checks authenticated credentials', () => {
@@ -133,6 +143,8 @@ describe('Auth', () => {
       expect(auth.isAuthorised).toBeFalsy();
     });
   });
+
+  // TODO: Test is not authorised after logging out
 
   function givenSuccessfulAuthorisation(result) {
     webAuth.parseHash.mockImplementation((callback) => {
