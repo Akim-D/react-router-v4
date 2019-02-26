@@ -4,7 +4,7 @@ import {NavLink, withRouter} from 'react-router-dom';
 
 import {AuthContext} from './AuthContext';
 
-const LoginLink = ({ children, alwaysShow = false, location, staticContext, match, history, ...rest }) => (
+const LoginLink = ({ children, alwaysShow = false, location, staticContext, match, history, to, ...rest }) => (
   <AuthContext.Consumer>
     {({ auth, path }) => (auth.isAuthorised && !alwaysShow)
       ? null

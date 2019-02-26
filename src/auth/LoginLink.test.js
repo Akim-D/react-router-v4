@@ -63,6 +63,12 @@ describe('LoginLink', () => {
     expect(wrapper.find('NavLink').prop(omittedProp)).toBeUndefined();
   });
 
+  test('to prop cannot be overridden', () => {
+    const wrapper = mountWithContext(<LoginLink to="/nowhere">link text</LoginLink>);
+
+    expect(wrapper.find('NavLink').prop('to')).not.toEqual('/nowhere');
+  });
+
   test('does not normally render when authorised', () => {
     auth.isAuthorised = true;
 
