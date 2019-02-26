@@ -1,6 +1,16 @@
 import {readFileSync} from 'fs';
 
 describe('index', () => {
+  const reactDom = {
+    render: jest.fn(),
+  };
+  const router = {
+    BrowserRouter: () => null,
+  };
+  const serviceWorker = {
+    register: jest.fn(),
+    unregister: jest.fn(),
+  };
   const root = () => document.getElementById('root');
 
   beforeEach(loadHtml);
@@ -12,13 +22,7 @@ describe('index', () => {
   });
 
   test('sets up routing', () => {
-    const reactDom = {
-      render: jest.fn(),
-    };
     jest.doMock('react-dom', () => reactDom);
-    const router = {
-      BrowserRouter: () => null,
-    };
     jest.doMock('react-router-dom', () => router);
 
     require('./index');
@@ -27,10 +31,6 @@ describe('index', () => {
   });
 
   test('unregisters the service worker', () => {
-    const serviceWorker = {
-      register: jest.fn(),
-      unregister: jest.fn(),
-    };
     jest.doMock('./serviceWorker', () => serviceWorker);
 
     require('./index');
