@@ -4,8 +4,10 @@ describe('index', () => {
   const reactDom = {
     render: jest.fn(),
   };
+  // noinspection JSUnusedGlobalSymbols
   const router = {
     BrowserRouter: () => null,
+    withRouter: () => null,
   };
   const serviceWorker = {
     register: jest.fn(),

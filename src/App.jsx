@@ -4,7 +4,7 @@ import {Route, Switch} from 'react-router';
 
 import Dashboard from './Dashboard';
 import Landing from './Landing';
-import withAuthentication, {AuthenticatedRoute} from './auth';
+import withAuthentication, {AuthenticatedRoute, LoginLink} from './auth';
 
 import './App.css';
 import logo from './logo.svg';
@@ -25,6 +25,9 @@ const App = () => (
           <li className="nav-item"><NavLink to="/" exact className="nav-link" activeClassName="active">Home</NavLink></li>
           <li className="nav-item"><NavLink to="/dashboard" exact className="nav-link" activeClassName="active">Dashboard</NavLink></li>
         </ul>
+        <div className="navbar-nav ml-auto">
+          <LoginLink className="nav-item nav-link">Login</LoginLink>
+        </div>
       </div>
     </nav>
     <Switch>
