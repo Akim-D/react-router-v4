@@ -4,7 +4,7 @@ import {Route, Switch} from 'react-router';
 
 import Dashboard from './Dashboard';
 import Landing from './Landing';
-import withAuthentication, {AuthenticatedRoute, LoginLink} from './auth';
+import withAuthentication, {AuthenticatedRoute, LoginLink, LogoutLink} from './auth';
 
 import './App.css';
 import logo from './logo.svg';
@@ -27,6 +27,7 @@ const App = () => (
         </ul>
         <div className="navbar-nav ml-auto">
           <LoginLink className="nav-item nav-link">Login</LoginLink>
+          <LogoutLink className="nav-item nav-link">Logout</LogoutLink>
         </div>
       </div>
     </nav>
