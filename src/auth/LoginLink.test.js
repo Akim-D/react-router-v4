@@ -18,6 +18,10 @@ describe('LoginLink', () => {
     </Router>
   );
 
+  beforeEach(() => {
+    auth.isAuthorised = false;
+  });
+
   test('links to the login route', () => {
     const wrapper = mountWithContext(<LoginLink>text</LoginLink>);
 
